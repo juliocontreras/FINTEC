@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Eye, EyeOff } from "lucide-react"
+import { Check, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react"
 import AreaTimeSeriesChart from '@/components/charts/AreaTimeSeriesChart';
 
 // --- COMPONENTE DE MODAL DE CONTRASEÑA ---
@@ -45,7 +45,6 @@ const PasswordModal = ({ onCorrectPassword, onCancel }: { onCorrectPassword: () 
 
 // --- COMPONENTE PRINCIPAL DEL DASHBOARD ---
 export function Dashboard() {
-  // MODIFICACIÓN: Patrimonio inicial ajustado a 7.500€
   const [balance, setBalance] = useState(7500.00);
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(balance.toFixed(2));
@@ -53,8 +52,9 @@ export function Dashboard() {
   
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  
+  const [isChartVisible, setIsChartVisible] = useState(false);
 
-  // MODIFICACIÓN: Valores por defecto para ingresos, gastos e inversiones
   const [monthlyIncomes, setMonthlyIncomes] = useState([{ id: 1, label: 'Salario', amount: 1000 }]);
   const [monthlyExpenses, setMonthlyExpenses] = useState([{ id: 1, label: 'Subscripciones', amount: 20 }]);
   const [monthlyInvestments, setMonthlyInvestments] = useState<{id: number, label: string, amount: number}[]>([]);
@@ -141,7 +141,7 @@ export function Dashboard() {
             <div className="flex flex-col items-center">
              <button className="bg-[#1e5c70] text-white p-2 rounded-xl shadow-lg transition-colors duration-200 w-16 h-16 flex items-center justify-center">
                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                </svg>
              </button>
              <span className="mt-2 text-sm text-gray-400">Payment</span>
@@ -149,7 +149,7 @@ export function Dashboard() {
            <div className="flex flex-col items-center">
              <button className="bg-[#20333b] text-white p-2 rounded-xl shadow-lg transition-colors duration-200 w-16 h-16 flex items-center justify-center">
                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                </svg>
              </button>
              <span className="mt-2 text-sm text-gray-400">Receive</span>
@@ -157,7 +157,7 @@ export function Dashboard() {
            <div className="flex flex-col items-center">
              <button className="bg-[#20333b] text-white p-2 rounded-xl shadow-lg transition-colors duration-200 w-16 h-16 flex items-center justify-center">
                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" />
                </svg>
              </button>
              <span className="mt-2 text-sm text-gray-400">Top Up</span>
@@ -165,7 +165,7 @@ export function Dashboard() {
            <div className="flex flex-col items-center">
              <button className="bg-[#20333b] text-white p-2 rounded-xl shadow-lg transition-colors duration-200 w-16 h-16 flex items-center justify-center">
                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                </svg>
              </button>
              <span className="mt-2 text-sm text-gray-400">Transfer</span>
@@ -195,19 +195,37 @@ export function Dashboard() {
             </div>
           </div>
           
-          <div className="bg-[#171A1F] p-0 rounded-xl">
-              <AreaTimeSeriesChart
-                  startNetWorth={balance}
-                  monthlyIncomes={monthlyIncomes}
-                  onMonthlyIncomesChange={setMonthlyIncomes}
-                  monthlyExpenses={monthlyExpenses}
-                  onMonthlyExpensesChange={setMonthlyExpenses}
-                  monthlyInvestments={monthlyInvestments}
-                  onMonthlyInvestmentsChange={setMonthlyInvestments}
-                  horizonYears={15}
-                  height={500}
-                  onEtaChange={setEta}
-              />
+          {/* --- MODIFICACIÓN: Card del Gráfico con color de fondo homogéneo --- */}
+          <div className="bg-[#20333b] rounded-xl overflow-hidden mb-24">
+            {/* Cabecera Clicable para Plegar/Desplegar */}
+            <div 
+              className="p-4 flex justify-between items-center cursor-pointer"
+              onClick={() => setIsChartVisible(!isChartVisible)}
+            >
+              <h3 className="font-semibold text-lg text-white">Objetivo 100.000€</h3>
+              <button className="text-gray-400 hover:text-white">
+                {isChartVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+
+            {/* Contenido Plegable con Transición */}
+            <div className={`transition-all duration-500 ease-in-out ${isChartVisible ? 'max-h-[1000px] opacity-100 visible' : 'max-h-0 opacity-0 invisible'}`}>
+               {/* Se elimina el div con fondo negro para que herede el color de la card */}
+               <div className="p-2">
+                 <AreaTimeSeriesChart
+                     startNetWorth={balance}
+                     monthlyIncomes={monthlyIncomes}
+                     onMonthlyIncomesChange={setMonthlyIncomes}
+                     monthlyExpenses={monthlyExpenses}
+                     onMonthlyExpensesChange={setMonthlyExpenses}
+                     monthlyInvestments={monthlyInvestments}
+                     onMonthlyInvestmentsChange={setMonthlyInvestments}
+                     horizonYears={15}
+                     height={500}
+                     onEtaChange={setEta}
+                 />
+               </div>
+            </div>
           </div>
         </div>
       </div>

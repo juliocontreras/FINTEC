@@ -244,7 +244,7 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
 
       <div className="bg-[#223138] text-white p-4 rounded-2xl shadow-xl flex flex-col" style={{ height }}>
           <div className="flex justify-between items-start mb-4">
-              <h2 className="text-2xl font-bold text-white">Objetivo 100.000€</h2>
+              
               <div className="flex items-center gap-2">
                   <div className="relative">
                       <button onClick={() => setIsTimeDropdownOpen(!isTimeDropdownOpen)} className="flex items-center gap-2 px-3 py-1 text-sm rounded bg-[#171A1F] text-gray-300 hover:bg-[#252a31]">
