@@ -35,7 +35,13 @@ function AppContent() {
 export default function Home() {
   return (
     <AuthProvider>
-      <AppContent />
+      {/* MODIFICACIÓN: Se ha envuelto AppContent en un div con la clase 'overflow-x-hidden'.
+        Esto previene el scroll horizontal en toda la aplicación, solucionando el problema
+        de desbordamiento en dispositivos móviles.
+      */}
+      <div className="overflow-x-hidden">
+        <AppContent />
+      </div>
     </AuthProvider>
   )
 }

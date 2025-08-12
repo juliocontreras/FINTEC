@@ -13,9 +13,7 @@ import {
   Area
 } from 'recharts';
 
-// --- DATOS SIMULADOS ---
-
-// Datos históricos detallados.
+// --- DATOS SIMULADOS (sin cambios) ---
 const historicalData = [
     { date: '2022-01-01', value: 5000 }, { date: '2022-02-01', value: 5800 },
     { date: '2022-03-01', value: 5400 }, { date: '2022-04-01', value: 6500 },
@@ -37,8 +35,6 @@ const historicalData = [
     { date: '2024-11-01', value: 30200 }, { date: '2024-12-01', value: 33500 },
     { date: '2025-01-01', value: 32440 },
 ];
-
-// Genera datos de proyección futura desde 2025 a 2040.
 const generateFutureData = () => {
     const futureData = [];
     let lastValue = historicalData[historicalData.length - 1].value;
@@ -54,11 +50,8 @@ const generateFutureData = () => {
     }
     return futureData;
 };
-
 const futureProjectionData = generateFutureData();
 const allData = [...historicalData, ...futureProjectionData];
-
-// Datos de eventos significativos (ingresos/gastos).
 const eventData = [
     { date: '2022-05-15', type: 'income', description: 'Bonus de proyecto' },
     { date: '2022-12-20', type: 'income', description: 'Paga extra Navidad' },
@@ -69,29 +62,22 @@ const eventData = [
     { date: '2024-11-29', type: 'expense', description: 'Compras Black Friday' },
 ];
 
-// --- COMPONENTES ---
-
-// Componente para la línea de tiempo de eventos bajo el gráfico.
+// --- COMPONENTES (sin cambios) ---
 const EventTimeline = ({ events, data, timeRange }: { events: any[], data: any[], timeRange: string }) => {
     if (!data || data.length < 2) return null;
-
     const startDate = new Date(data[0].date).getTime();
     const endDate = new Date(data[data.length - 1].date).getTime();
     const totalDuration = endDate - startDate;
-
     if (totalDuration <= 0) return null;
-
     const calculatePosition = (eventDate: string) => {
         const eventTime = new Date(eventDate).getTime();
         const position = ((eventTime - startDate) / totalDuration) * 100;
         return `${position}%`;
     };
-
     const filteredEvents = events.filter(event => {
         const eventTime = new Date(event.date).getTime();
         return eventTime >= startDate && eventTime <= endDate;
     });
-
     return (
         <div className="relative h-10 w-full mt-[-1rem] px-5">
             {filteredEvents.map((event, index) => (
@@ -116,15 +102,12 @@ const EventTimeline = ({ events, data, timeRange }: { events: any[], data: any[]
     );
 };
 
-// Variable para rastrear el último año mostrado en el eje X.
-// Se declara fuera del componente para que persista entre renders.
 let lastDisplayedYear: number | null = null;
 
 export function Dashboard() {
   const [balance, setBalance] = useState(32440.00);
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(balance.toFixed(2));
-  
   const [timeRange, setTimeRange] = useState('ALL');
   const [displayData, setDisplayData] = useState(historicalData);
 
@@ -132,12 +115,10 @@ export function Dashboard() {
     const now = new Date('2025-01-01');
     let startDate;
     let dataSet = timeRange === 'TODO' ? allData : historicalData;
-
     if (timeRange === 'TODO') {
         setDisplayData(allData);
         return;
     }
-
     switch (timeRange) {
         case '1M': startDate = new Date(new Date(now).setMonth(now.getMonth() - 1)); break;
         case '3M': startDate = new Date(new Date(now).setMonth(now.getMonth() - 3)); break;
@@ -147,14 +128,11 @@ export function Dashboard() {
         case '5A': startDate = new Date(new Date(now).setFullYear(now.getFullYear() - 5)); break;
         default: setDisplayData(historicalData); return;
     }
-    
     const filteredData = dataSet.filter(d => new Date(d.date) >= startDate);
     const startIndex = dataSet.findIndex(d => new Date(d.date) >= startDate);
     const finalData = startIndex > 0 ? [dataSet[startIndex - 1], ...filteredData] : filteredData;
-
     setDisplayData(finalData);
   }, [timeRange]);
-
 
   const handleEdit = () => {
     setInputValue(balance.toFixed(2).replace('.', ','));
@@ -173,10 +151,7 @@ export function Dashboard() {
     setInputValue(e.target.value);
   };
   
-  const formattedBalance = new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(balance);
+  const formattedBalance = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(balance);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
       if (active && payload && payload.length) {
@@ -193,7 +168,6 @@ export function Dashboard() {
   const formatXAxis = (tickItem: string) => {
     const date = new Date(tickItem);
     const year = date.getFullYear();
-
     if (['3A', '5A', 'TODO'].includes(timeRange)) {
         if (year !== lastDisplayedYear) {
             lastDisplayedYear = year;
@@ -201,7 +175,6 @@ export function Dashboard() {
         }
         return "";
     }
-    
     const options: Intl.DateTimeFormatOptions = {};
     switch (timeRange) {
         case '1M': options.day = 'numeric'; options.month = 'short'; break;
@@ -214,25 +187,16 @@ export function Dashboard() {
 
   const getInterval = () => {
     switch(timeRange) {
-        case '1M':
-        case '3M':
-        case '6M':
-        case '1A':
-            return 0; // Muestra todas las etiquetas para rangos cortos
-        case '3A':
-            return 2; // Muestra una de cada 3 etiquetas
-        case '5A':
-            return 5; // Muestra una de cada 6 etiquetas
-        case 'TODO':
-            return 11; // Muestra una de cada 12 etiquetas (anual)
-        default:
-            return 'auto';
+        case '1M': case '3M': case '6M': case '1A': return 0;
+        case '3A': return 2;
+        case '5A': return 5;
+        case 'TODO': return 11;
+        default: return 'auto';
     }
   }
 
-
   return (
-    <div className="flex justify-center text-white p-4">
+    <div className="flex justify-center text-white p-4 overflow-x-hidden">
       <div className="space-y-6 w-full md:mx-auto">
         {/* Sección de Saldo */}
         <div className="mb-6 text-center">
@@ -300,9 +264,49 @@ export function Dashboard() {
             <span className="mt-2 text-sm text-gray-400">Transfer</span>
           </div>
         </div>
+        
+        {/* MODIFICACIÓN 1: Historial de Transacciones movido aquí */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center text-gray-400">
+            <span className="font-semibold text-gray-200">Transaction History</span>
+            <a href="#" className="text-sm text-cyan-300 hover:underline">See All</a>
+          </div>
+          <div className="bg-[#20333b] p-4 rounded-xl flex justify-between items-center">
+            <div className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+              <div className="ml-3">
+                <p className="font-semibold text-gray-200">Bank Account</p>
+                <p className="text-sm text-gray-400">4322 **** **** 8900</p>
+              </div>
+            </div>
+            <button className="text-gray-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+          <div className="bg-[#20333b] p-4 rounded-xl flex justify-between items-center">
+            <div className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2-3-.895-3-2 .895-2 2-2zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="ml-3">
+                <p className="font-semibold text-gray-200">VISA</p>
+                <p className="text-sm text-gray-400">5567 **** **** 8910</p>
+              </div>
+            </div>
+            <button className="text-gray-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
-        {/* Tarjeta de Historial de Patrimonio */}
-        <div className="bg-[#20333b] p-4 rounded-xl">
+        {/* MODIFICACIÓN 2: Se ha añadido un margen inferior (mb-8) a esta tarjeta */}
+        <div className="bg-[#20333b] p-4 rounded-xl mb-8">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-gray-200">Historial y Proyecciones</h3>
                 <div className="flex flex-wrap gap-2 text-xs">
@@ -355,47 +359,6 @@ export function Dashboard() {
                 </ResponsiveContainer>
             </div>
             <EventTimeline events={eventData} data={displayData} timeRange={timeRange} />
-        </div>
-
-
-        {/* Historial de Transacciones */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-center text-gray-400">
-            <span className="font-semibold text-gray-200">Transaction History</span>
-            <a href="#" className="text-sm text-cyan-300 hover:underline">See All</a>
-          </div>
-          <div className="bg-[#20333b] p-4 rounded-xl flex justify-between items-center">
-            <div className="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
-              <div className="ml-3">
-                <p className="font-semibold text-gray-200">Bank Account</p>
-                <p className="text-sm text-gray-400">4322 **** **** 8900</p>
-              </div>
-            </div>
-            <button className="text-gray-400 hover:text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-          <div className="bg-[#20333b] p-4 rounded-xl flex justify-between items-center">
-            <div className="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2-3-.895-3-2 .895-2 2-2zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div className="ml-3">
-                <p className="font-semibold text-gray-200">VISA</p>
-                <p className="text-sm text-gray-400">5567 **** **** 8910</p>
-              </div>
-            </div>
-            <button className="text-gray-400 hover:text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
     </div>

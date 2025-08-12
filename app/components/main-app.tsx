@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+// Se han restaurado los imports originales
 import { Bell, User, LogOut } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -41,9 +42,8 @@ export function MainApp() {
   }
 
   return (
-    // Se ha actualizado el estilo para que la altura sea del 110% de la pantalla
-    <div className="flex pt-4 h-[110vh]" style={{ background: 'linear-gradient(to bottom, #152C37, #0C181E)' }}>
-      {/* Custom Sidebar */}
+    <div className="flex h-screen overflow-x-hidden bg-transparent">
+      {/* Custom Sidebar (implementación original del usuario) */}
       <CustomSidebar 
         activeSection={activeSection}
         onSectionChange={setActiveSection}
@@ -52,11 +52,9 @@ export function MainApp() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        {/* Se han eliminado las clases que causaban el corte del fondo */}
-        <header className="bg-transparent">
-          {/* El código del encabezado ha sido reemplazado por el nuevo diseño */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header Fijo */}
+        <header className="bg-transparent z-10">
           <div className="flex justify-between items-center h-14 px-4 bg-transparent">
               {/* Menú de hamburguesa y campana a la izquierda con círculos */}
               <div className="flex items-center space-x-4">
@@ -76,43 +74,39 @@ export function MainApp() {
                       </svg>
                   </button>
               </div>
-              {/* Texto "Hello!" y nombre de usuario con foto a la derecha */}
-              {/* Ambos elementos ahora actúan como enlaces a la sección de configuración */}
+              {/* Texto "Hola!" y nombre de usuario con foto a la derecha */}
               <div 
                 className="flex items-center space-x-3 cursor-pointer"
                 onClick={() => setActiveSection("settings")}
               >
                   <div className="flex flex-col items-end">
-                      <p className="font-normal text-sm text-gray-200">Hello!</p>
+                      <p className="font-normal text-sm text-gray-200">Hola!</p>
                       <p className="text-lg font-bold text-white">Julio Contreras</p>
                   </div>
-                  {/* Foto de perfil */}
-                  <img src="https://i.pravatar.cc/40?u=juliocontreras" alt="Profile" className="h-10 w-10 rounded-full object-cover"/>
+                  {/* MODIFICACIÓN FINAL: Foto de perfil de GitHub. */}
+                  <img 
+                    src="https://github.com/juliocontreras.png" // URL de la foto de perfil de GitHub
+                    alt="Profile" 
+                    className="h-11 w-11 rounded-full object-cover ring-2 ring-[#29c2a3]"
+                  />
               </div>
           </div>
         </header>
 
-        {/* Contenido principal con ancho responsive */}
-        <main className="flex-1 overflow-auto p-4 pb-24">
-          <div className="w-5/5 md:w-1/2 lg:w-[45%] mx-auto">
+        {/* Contenido principal con scroll vertical propio */}
+        <main className="flex-1 overflow-y-auto p-4 pb-24">
+          <div className="w-full md:w-1/2 lg:w-[45%] mx-auto">
             {renderActiveSection()}
           </div>
         </main>
       </div>
 
-      {/* Bottom Navigation */}
-      {/* He añadido las clases 'w-full sm:w-3/5 md:w-full mx-auto' para controlar el ancho y centrar el componente.
-          w-full (ancho completo) por defecto en móviles.
-          sm:w-3/5 (60% de ancho) para pantallas >= 640px.
-          md:w-full (ancho completo) para pantallas >= 768px, sobrescribiendo la clase 'sm:w-3/5'.
-          mx-auto centra el componente.
-      */}
+      {/* Bottom Navigation (implementación original del usuario) */}
       <BottomNavigation 
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         onMenuClick={toggleSidebar}
         isSidebarOpen={isSidebarOpen}
-        
       />
 
       {/* Overlay for mobile when sidebar is open */}
