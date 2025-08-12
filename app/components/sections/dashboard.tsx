@@ -202,7 +202,7 @@ export function Dashboard() {
               className="p-4 flex justify-between items-center cursor-pointer"
               onClick={() => setIsChartVisible(!isChartVisible)}
             >
-              <h3 className="font-semibold text-lg text-white">Objetivo 100.000€</h3>
+              <h3 className="font-semibold text-lg text-white">Objetivo 100K</h3>
               <button className="text-gray-400 hover:text-white">
                 {isChartVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </button>

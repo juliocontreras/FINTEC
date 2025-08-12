@@ -244,10 +244,10 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
 
       <div className="bg-[#223138] text-white p-4 rounded-2xl shadow-xl flex flex-col" style={{ height }}>
           <div className="flex justify-between items-start mb-4">
-              
+              <h2 className="text-2xl font-bold text-white"></h2>
               <div className="flex items-center gap-2">
                   <div className="relative">
-                      <button onClick={() => setIsTimeDropdownOpen(!isTimeDropdownOpen)} className="flex items-center gap-2 px-3 py-1 text-sm rounded bg-[#171A1F] text-gray-300 hover:bg-[#252a31]">
+                      <button onClick={() => setIsTimeDropdownOpen(!isTimeDropdownOpen)} className="flex items-center gap-2 px-3 py-1 text-sm rounded-[4px] bg-[#171A1F] text-gray-300 hover:bg-[#252a31]">
                           <Clock size={14} />
                           <span>{activeRange}</span>
                           <ChevronDown size={14} className={`transition-transform ${isTimeDropdownOpen ? 'rotate-180' : ''}`} />
@@ -269,15 +269,15 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
           </div>
 
           <div className="flex gap-2 mb-4 text-white">
-              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-md">
+              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
                   <span className="text-sm font-semibold text-gray-300">Ingresos</span>
                   <button onClick={() => setModalType('incomes')} className="bg-[#1e5c70] p-1.5 rounded-md hover:bg-cyan-600"><Plus size={14} /></button>
               </div>
-              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-md">
+              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
                   <span className="text-sm font-semibold text-gray-300">Gastos</span>
                   <button onClick={() => setModalType('expenses')} className="bg-[#1e5c70] p-1.5 rounded-md hover:bg-cyan-600"><Plus size={14} /></button>
               </div>
-              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-md">
+              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
                   <span className="text-sm font-semibold text-gray-300">Inversiones</span>
                   <button onClick={() => setModalType('investments')} className="bg-[#1e5c70] p-1.5 rounded-md hover:bg-cyan-600"><Plus size={14} /></button>
               </div>
