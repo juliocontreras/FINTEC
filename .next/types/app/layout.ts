@@ -1,4 +1,4 @@
-// File: C:\Users\elhac\Documents\GitHub\fintechai\app\layout.tsx
+// File: C:\Users\julio\Documents\GitHub\FINTEC\app\layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

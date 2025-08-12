@@ -1,5 +1,6 @@
 "use client"
 
+import React, { useState } from "react"; // Importación de React necesaria
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,13 +8,34 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { ThemeToggle } from "@/components/theme-toggle" // Asumo que este componente existe
+import { ThemeToggle } from "@/components/theme-toggle"
 import { User, Bell, Shield, CreditCard, Download, Trash2, LogOut, ChevronDown } from 'lucide-react'
-import { useState } from "react"
 import { useAuth } from "../auth-provider"
 
-// Componente de Tarjeta Plegable
-const CollapsibleCard = ({ id, title, description, icon, openCard, setOpenCard, children }) => {
+// --- INTERFACES PARA LOS PROPS ---
+
+// 1. Contrato para los props de CollapsibleCard
+interface CollapsibleCardProps {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  openCard: string | null;
+  setOpenCard: React.Dispatch<React.SetStateAction<string | null>>;
+  children: React.ReactNode;
+}
+
+// 2. Contrato para los props de ThemeToggle (asumiendo que puede recibir estas clases)
+// NOTA: Idealmente, esta interfaz debería estar en el archivo de 'ThemeToggle.tsx'
+interface ThemeToggleProps {
+  contentClassName?: string;
+  triggerClassName?: string;
+}
+
+// --- COMPONENTES ---
+
+// Componente de Tarjeta Plegable con tipos aplicados
+const CollapsibleCard = ({ id, title, description, icon, openCard, setOpenCard, children }: CollapsibleCardProps) => {
   const isOpen = openCard === id;
 
   const cardClasses = "bg-[#223138] rounded-2xl shadow-xl border-none transition-all duration-300";
@@ -49,7 +71,7 @@ const CollapsibleCard = ({ id, title, description, icon, openCard, setOpenCard, 
 export function Settings() {
   const { logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [openCard, setOpenCard] = useState('profile'); // 'profile' card is open by default
+  const [openCard, setOpenCard] = useState<string | null>('profile'); // 'profile' card is open by default
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -66,13 +88,13 @@ export function Settings() {
   const labelClasses = "text-gray-300";
   const inputClasses = "bg-[#1a252a] border-slate-600 text-white placeholder:text-gray-500 rounded-md";
   const selectTriggerClasses = "bg-[#1a252a] border-slate-600 text-white rounded-md";
-  const selectContentClasses = "bg-[#1a252a] border-slate-600 text-white"; // Color sólido para desplegables
+  const selectContentClasses = "bg-[#1a252a] border-slate-600 text-white";
   const buttonCyanClasses = "bg-[#4fd1c5] hover:bg-[#46d3c8] text-black font-bold rounded-lg";
   const buttonDeleteDarkClasses = "bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg";
   const separatorClasses = "bg-slate-700";
 
   return (
-    <div className="space-y-6 p-4 md:p-8 pb-24"> {/* Espaciado inferior añadido aquí */}
+    <div className="space-y-6 p-4 md:p-8 pb-24">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-white">Configuración</h2>
         <p className="text-gray-400">Personaliza tu experiencia en la aplicación</p>
@@ -135,8 +157,8 @@ export function Settings() {
                 <Label className={labelClasses}>Tema</Label>
                 <p className="text-sm text-gray-400">Selecciona el tema de la aplicación</p>
                 </div>
-                {/* ThemeToggle necesita recibir las clases para el estilo del desplegable */}
-                <ThemeToggle contentClassName={selectContentClasses} triggerClassName={buttonCyanClasses} />
+                {/* 3. El componente ThemeToggle se usa sin props personalizados */}
+                <ThemeToggle />
             </div>
             <Separator className={separatorClasses} />
             <div className="flex items-center justify-between">
@@ -223,7 +245,8 @@ export function Settings() {
         </div>
       </CollapsibleCard>
 
-      <style jsx global>{`
+      {/* 4. La etiqueta <style jsx> se ha modernizado para que sea compatible */}
+      <style>{`
         @keyframes fade-in {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
