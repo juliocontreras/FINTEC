@@ -32,9 +32,9 @@ export type AreaTimeSeriesChartProps = {
 const GOAL_NET_WORTH = 100000;
 
 // ============================================================================
-// 2. LÓGICA DE PROYECCIÓN CON PICOS
+// 2. LÓGICA DE PROYECCIÓN ORGÁNICA
 // ============================================================================
-class SpikyProjection {
+class OrganicProjection {
   static getSeries(props: Omit<AreaTimeSeriesChartProps, 'onEtaChange'>): [number, number][] {
     const { startNetWorth, monthlyIncomes, monthlyExpenses, monthlyInvestments, horizonYears = 15 } = props;
     const series: [number, number][] = [];
@@ -44,6 +44,7 @@ class SpikyProjection {
     const totalMonthlyIncome = monthlyIncomes.reduce((sum, item) => sum + item.amount, 0);
     const totalMonthlyExpense = monthlyExpenses.reduce((sum, item) => sum + item.amount, 0);
     const totalMonthlyInvestment = monthlyInvestments.reduce((sum, item) => sum + item.amount, 0);
+    const monthlyNetChange = totalMonthlyIncome - totalMonthlyExpense - totalMonthlyInvestment;
 
     const endDate = new Date();
     endDate.setFullYear(endDate.getFullYear() + horizonYears);
@@ -51,19 +52,28 @@ class SpikyProjection {
     series.push([currentDate.getTime(), parseFloat(currentNetWorth.toFixed(2))]);
 
     while (currentDate < endDate) {
-      const dateBefore = new Date(currentDate);
-      dateBefore.setMonth(dateBefore.getMonth() + 1);
-      dateBefore.setDate(0);
-      if (dateBefore > currentDate) {
-          series.push([dateBefore.getTime(), parseFloat(currentNetWorth.toFixed(2))]);
+      // Simula volatilidad a mitad de mes para un look más orgánico
+      const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+      const midMonthDate = new Date(currentDate);
+      midMonthDate.setDate(currentDate.getDate() + daysInMonth / 2);
+
+      if (midMonthDate < endDate) {
+          // fluctuación aleatoria basada en el ahorro mensual
+          const fluctuation = (Math.random() - 0.45) * (monthlyNetChange * 0.7); 
+          series.push([midMonthDate.getTime(), parseFloat((currentNetWorth + (monthlyNetChange / 2) + fluctuation).toFixed(2))]);
       }
-      
+
+      // Aplica el cambio neto mensual al final del mes
       currentDate.setMonth(currentDate.getMonth() + 1);
-      currentDate.setDate(1);
-      currentNetWorth += totalMonthlyIncome - totalMonthlyExpense - totalMonthlyInvestment;
-      series.push([new Date(currentDate).getTime(), parseFloat(currentNetWorth.toFixed(2))]);
+      currentNetWorth += monthlyNetChange;
+      
+      if (currentDate < endDate) {
+          series.push([new Date(currentDate).getTime(), parseFloat(currentNetWorth.toFixed(2))]);
+      }
     }
     
+    // Ordenar por si acaso los puntos se desordenan
+    series.sort((a, b) => a[0] - b[0]);
     return series;
   }
 
@@ -137,10 +147,10 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
   const [modalType, setModalType] = useState<'incomes' | 'expenses' | 'investments' | null>(null);
 
-  const projectionData = useMemo(() => SpikyProjection.getSeries(props), [props]);
+  const projectionData = useMemo(() => OrganicProjection.getSeries(props), [props]);
   
   useEffect(() => {
-    const eta = SpikyProjection.getETAtoGoal(projectionData, GOAL_NET_WORTH);
+    const eta = OrganicProjection.getETAtoGoal(projectionData, GOAL_NET_WORTH);
     onEtaChange?.(eta);
   }, [projectionData, onEtaChange]);
   
@@ -157,7 +167,7 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
     const totalPoints = projectionData.length - 1;
     if (totalPoints <= 0) return;
 
-    const pointsPerYear = 24;
+    const pointsPerYear = 24; // Aproximadamente 2 puntos por mes
     let end = 100;
     switch (range) {
       case '1A': end = (pointsPerYear / totalPoints) * 100; break;
@@ -201,9 +211,9 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
       series: [{
           name: 'Patrimonio',
           type: 'line',
-          step: 'end',
+          smooth: 0.4, // <-- AÑADIDO: Suaviza la línea
           symbol: 'none',
-          lineStyle: { color: '#4fd1c5', width: 3 },
+          lineStyle: { color: '#4fd1c5', width: 2.5 },
           areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(79, 209, 197, 0.5)' }, { offset: 1, color: 'rgba(79, 209, 197, 0)' }]) },
           markLine: {
             silent: true,
