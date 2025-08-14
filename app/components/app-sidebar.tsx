@@ -49,18 +49,16 @@ const menuItems = [
 
 export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) {
   return (
-    // Se han actualizado las clases para reducir el ancho del menú lateral en un 15%.
-    // En pantallas pequeñas (hasta 767px), el ancho es 3.4vw.
-    // En pantallas 'md' y superiores (768px o más), el ancho es 204px.
+    // Se ajusta el ancho en pantallas pequeñas para dar espacio al texto.
     <div 
-      className="w-[3.4vw] md:w-[204px]"
+      className="w-[70px] md:w-[204px] transition-all duration-300"
       style={{ background: 'linear-gradient(to top right, #000000 0%, #1e3f4e 100%)' }}
     >
       <Sidebar className="w-full h-full bg-transparent">
         <SidebarHeader className="max-md:px-1">
-          <div className="flex items-center gap-2 px-2 py-2 max-md:px-1 max-md:justify-center">
-            <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center max-md:h-6 max-md:w-6">
-              <Wallet className="h-5 w-5 text-primary max-md:h-4 max-md:w-4" />
+          <div className="flex items-center gap-2 px-2 py-2 max-md:justify-center">
+            <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Wallet className="h-5 w-5 text-primary" />
             </div>
             <span className="font-semibold max-md:hidden">FinanceApp</span>
           </div>
@@ -73,13 +71,17 @@ export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) 
               <SidebarMenu>
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.id}>
+                    {/* Se modifica el botón para apilar el icono y el texto en móvil */}
                     <SidebarMenuButton 
                       onClick={() => onSectionChange(item.id)} 
                       isActive={activeSection === item.id}
-                      className="max-md:px-1 max-md:justify-center max-md:min-h-12"
+                      className="max-md:flex-col max-md:h-16 max-md:justify-center"
                     >
-                      <item.icon className="h-4 w-4 max-md:h-5 max-md:w-5" />
+                      <item.icon className="h-5 w-5" />
+                      {/* Texto completo para escritorio */}
                       <span className="max-md:hidden">{item.title}</span>
+                      {/* Texto abreviado para móvil */}
+                      <span className="md:hidden text-xs mt-1">{item.title.substring(0, 4)}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -89,16 +91,16 @@ export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) 
         </SidebarContent>
 
         <SidebarFooter className="max-md:px-1">
-          {/* Nuevo botón de Cerrar sesión */}
           <div className="px-2 py-2 max-md:px-1">
-            <SidebarMenuButton className="w-full justify-start text-red-400 hover:bg-red-500/10 hover:text-red-300">
-              <LogOut className="h-4 w-4" />
+            {/* Se aplica el mismo estilo de apilado al botón de cerrar sesión */}
+            <SidebarMenuButton className="w-full text-red-400 hover:bg-red-500/10 hover:text-red-300 max-md:flex-col max-md:h-16 max-md:justify-center">
+              <LogOut className="h-5 w-5" />
               <span className="max-md:hidden">Cerrar Sesión</span>
+              <span className="md:hidden text-xs mt-1">Salir</span>
             </SidebarMenuButton>
           </div>
-          <div className="px-2 py-2 text-xs text-muted-foreground max-md:px-1 max-md:text-center max-md:text-[10px]">
-            <span className="max-md:hidden">© 2024 FinanceApp</span>
-            <span className="md:hidden">©</span>
+          <div className="px-2 py-2 text-xs text-muted-foreground max-md:hidden">
+            <span>© 2024 FinanceApp</span>
           </div>
         </SidebarFooter>
       </Sidebar>
