@@ -142,6 +142,7 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
   const { height = 500, onEtaChange } = props;
 
   const echartsRef = useRef<any>(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null); // Referencia para el contenedor principal del gráfico
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeRange, setActiveRange] = useState('1A');
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
@@ -157,6 +158,52 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
   useEffect(() => {
     handleRangeChange(activeRange, true);
   }, [projectionData]);
+
+  // ============================================================================
+  // LÓGICA DE PANTALLA COMPLETA MEJORADA
+  // ============================================================================
+  useEffect(() => {
+    // Función para actualizar el estado cuando cambia el modo de pantalla completa
+    const handleFullscreenChange = () => {
+      // Comprueba el estado de pantalla completa con y sin prefijos de proveedor
+      const isCurrentlyFullscreen = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+      setIsFullscreen(isCurrentlyFullscreen);
+    };
+
+    // Añade listeners para el evento de cambio de pantalla completa
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Para Safari y otros navegadores basados en WebKit
+
+    // Limpia los listeners cuando el componente se desmonta
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    const container = chartContainerRef.current;
+    if (!container) return;
+
+    const isCurrentlyFullscreen = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+
+    if (!isCurrentlyFullscreen) {
+      // Intenta entrar en pantalla completa usando la API estándar o con prefijo
+      if (container.requestFullscreen) {
+        container.requestFullscreen().catch(err => console.error(`Error al activar pantalla completa: ${err.message}`));
+      } else if ((container as any).webkitRequestFullscreen) { // Safari
+        (container as any).webkitRequestFullscreen();
+      }
+    } else {
+      // Intenta salir de pantalla completa
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) { // Safari
+        (document as any).webkitExitFullscreen();
+      }
+    }
+  }, []);
+  // ============================================================================
 
   const handleRangeChange = (range: string, isInitial = false) => {
     setActiveRange(range);
@@ -179,17 +226,6 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
     echartsInstance.dispatchAction({ type: 'dataZoom', start: 0, end: Math.min(100, end) });
   };
   
-  const toggleFullscreen = useCallback(() => {
-    const chartContainer = echartsRef.current?.ele?.parentElement?.parentElement;
-    if (!chartContainer) return;
-    if (!document.fullscreenElement) {
-        chartContainer.requestFullscreen().catch((err: any) => alert(`Error: ${err.message}`));
-    } else {
-        document.exitFullscreen();
-    }
-    setIsFullscreen(!document.fullscreenElement);
-  }, []);
-
   const chartOption = useMemo(() => ({
       backgroundColor: 'transparent',
       tooltip: {
@@ -211,7 +247,7 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
       series: [{
           name: 'Patrimonio',
           type: 'line',
-          smooth: 0.4, // <-- AÑADIDO: Suaviza la línea
+          smooth: 0.4,
           symbol: 'none',
           lineStyle: { color: '#4fd1c5', width: 2.5 },
           areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(79, 209, 197, 0.5)' }, { offset: 1, color: 'rgba(79, 209, 197, 0)' }]) },
@@ -252,7 +288,7 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
         colorClass="text-gray-300"
       />
 
-      <div className="bg-[#223138] text-white p-4 rounded-2xl shadow-xl flex flex-col" style={{ height }}>
+      <div ref={chartContainerRef} className="bg-[#223138] text-white p-4 rounded-2xl shadow-xl flex flex-col" style={{ height }}>
           <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-bold text-white"></h2>
               <div className="flex items-center gap-2">
@@ -278,16 +314,16 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
               </div>
           </div>
 
-          <div className="flex gap-2 mb-4 text-white">
-              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
+          <div className="flex flex-wrap gap-2 mb-4 text-white">
+              <div className="flex-1 min-w-[120px] flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
                   <span className="text-sm font-semibold text-gray-300">Ingresos</span>
                   <button onClick={() => setModalType('incomes')} className="bg-[#1e5c70] p-1.5 rounded-md hover:bg-cyan-600"><Plus size={14} /></button>
               </div>
-              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
+              <div className="flex-1 min-w-[120px] flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
                   <span className="text-sm font-semibold text-gray-300">Gastos</span>
                   <button onClick={() => setModalType('expenses')} className="bg-[#1e5c70] p-1.5 rounded-md hover:bg-cyan-600"><Plus size={14} /></button>
               </div>
-              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
+              <div className="flex-1 min-w-[120px] flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
                   <span className="text-sm font-semibold text-gray-300">Inversiones</span>
                   <button onClick={() => setModalType('investments')} className="bg-[#1e5c70] p-1.5 rounded-md hover:bg-cyan-600"><Plus size={14} /></button>
               </div>
