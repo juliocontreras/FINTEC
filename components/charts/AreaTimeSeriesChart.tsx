@@ -52,15 +52,18 @@ class OrganicProjection {
     series.push([currentDate.getTime(), parseFloat(currentNetWorth.toFixed(2))]);
 
     while (currentDate < endDate) {
+      // Simula volatilidad a mitad de mes para un look más orgánico
       const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
       const midMonthDate = new Date(currentDate);
       midMonthDate.setDate(currentDate.getDate() + daysInMonth / 2);
 
       if (midMonthDate < endDate) {
+          // fluctuación aleatoria basada en el ahorro mensual
           const fluctuation = (Math.random() - 0.45) * (monthlyNetChange * 0.7); 
           series.push([midMonthDate.getTime(), parseFloat((currentNetWorth + (monthlyNetChange / 2) + fluctuation).toFixed(2))]);
       }
 
+      // Aplica el cambio neto mensual al final del mes
       currentDate.setMonth(currentDate.getMonth() + 1);
       currentNetWorth += monthlyNetChange;
       
@@ -69,6 +72,7 @@ class OrganicProjection {
       }
     }
     
+    // Ordenar por si acaso los puntos se desordenan
     series.sort((a, b) => a[0] - b[0]);
     return series;
   }
@@ -107,7 +111,7 @@ const FlowModal = ({ isOpen, onClose, title, items, setItems, colorClass }: { is
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-[#20333b] p-6 rounded-xl shadow-lg w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
         <h3 className={`text-lg font-semibold mb-4 ${colorClass}`}>{title}</h3>
         <div className="space-y-2 max-h-48 overflow-y-auto pr-2 mb-4">
@@ -138,8 +142,7 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
   const { height = 500, onEtaChange } = props;
 
   const echartsRef = useRef<any>(null);
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-  const [isMaximized, setIsMaximized] = useState(false); // Renombrado para mayor claridad
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeRange, setActiveRange] = useState('1A');
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
   const [modalType, setModalType] = useState<'incomes' | 'expenses' | 'investments' | null>(null);
@@ -155,37 +158,6 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
     handleRangeChange(activeRange, true);
   }, [projectionData]);
 
-  // ============================================================================
-  // LÓGICA DE PANTALLA COMPLETA SIMULADA (CSS)
-  // ============================================================================
-  const toggleFullscreen = () => {
-    setIsMaximized(!isMaximized);
-  };
-
-  useEffect(() => {
-    // Controla el scroll del body
-    if (isMaximized) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    
-    // Redimensiona el gráfico después de la transición CSS
-    const timer = setTimeout(() => {
-      const echartsInstance = echartsRef.current?.getEchartsInstance();
-      if (echartsInstance) {
-        echartsInstance.resize();
-      }
-    }, 300); // Coincide con la duración de la transición
-
-    // Limpieza al desmontar el componente o cambiar el estado
-    return () => {
-      document.body.style.overflow = 'auto';
-      clearTimeout(timer);
-    };
-  }, [isMaximized]);
-  // ============================================================================
-
   const handleRangeChange = (range: string, isInitial = false) => {
     setActiveRange(range);
     setIsTimeDropdownOpen(false);
@@ -195,7 +167,7 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
     const totalPoints = projectionData.length - 1;
     if (totalPoints <= 0) return;
 
-    const pointsPerYear = 24;
+    const pointsPerYear = 24; // Aproximadamente 2 puntos por mes
     let end = 100;
     switch (range) {
       case '1A': end = (pointsPerYear / totalPoints) * 100; break;
@@ -207,6 +179,17 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
     echartsInstance.dispatchAction({ type: 'dataZoom', start: 0, end: Math.min(100, end) });
   };
   
+  const toggleFullscreen = useCallback(() => {
+    const chartContainer = echartsRef.current?.ele?.parentElement?.parentElement;
+    if (!chartContainer) return;
+    if (!document.fullscreenElement) {
+        chartContainer.requestFullscreen().catch((err: any) => alert(`Error: ${err.message}`));
+    } else {
+        document.exitFullscreen();
+    }
+    setIsFullscreen(!document.fullscreenElement);
+  }, []);
+
   const chartOption = useMemo(() => ({
       backgroundColor: 'transparent',
       tooltip: {
@@ -228,7 +211,7 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
       series: [{
           name: 'Patrimonio',
           type: 'line',
-          smooth: 0.4,
+          smooth: 0.4, // <-- AÑADIDO: Suaviza la línea
           symbol: 'none',
           lineStyle: { color: '#4fd1c5', width: 2.5 },
           areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(79, 209, 197, 0.5)' }, { offset: 1, color: 'rgba(79, 209, 197, 0)' }]) },
@@ -269,16 +252,7 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
         colorClass="text-gray-300"
       />
 
-      <div 
-        ref={chartContainerRef} 
-        className={`bg-[#223138] text-white p-4 shadow-xl flex flex-col transition-all duration-300
-          ${isMaximized 
-            ? 'fixed inset-0 z-50 !rounded-none' 
-            : 'relative rounded-2xl'
-          }`
-        }
-        style={{ height: isMaximized ? '100%' : height }}
-      >
+      <div className="bg-[#223138] text-white p-4 rounded-2xl shadow-xl flex flex-col" style={{ height }}>
           <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-bold text-white"></h2>
               <div className="flex items-center gap-2">
@@ -299,21 +273,21 @@ const AreaTimeSeriesChart: React.FC<AreaTimeSeriesChartProps> = (props) => {
                       )}
                   </div>
                   <button onClick={toggleFullscreen} className="p-2 bg-[#171A1F] rounded-md hover:bg-[#252a31]">
-                      {isMaximized ? <Minimize size={16} /> : <Maximize size={16} />}
+                      {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
                   </button>
               </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-4 text-white">
-              <div className="flex-1 min-w-[120px] flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
+          <div className="flex gap-2 mb-4 text-white">
+              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
                   <span className="text-sm font-semibold text-gray-300">Ingresos</span>
                   <button onClick={() => setModalType('incomes')} className="bg-[#1e5c70] p-1.5 rounded-md hover:bg-cyan-600"><Plus size={14} /></button>
               </div>
-              <div className="flex-1 min-w-[120px] flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
+              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
                   <span className="text-sm font-semibold text-gray-300">Gastos</span>
                   <button onClick={() => setModalType('expenses')} className="bg-[#1e5c70] p-1.5 rounded-md hover:bg-cyan-600"><Plus size={14} /></button>
               </div>
-              <div className="flex-1 min-w-[120px] flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
+              <div className="flex-1 flex items-center justify-between bg-[#171A1F] p-2 rounded-[6px]">
                   <span className="text-sm font-semibold text-gray-300">Inversiones</span>
                   <button onClick={() => setModalType('investments')} className="bg-[#1e5c70] p-1.5 rounded-md hover:bg-cyan-600"><Plus size={14} /></button>
               </div>
