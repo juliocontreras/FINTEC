@@ -2,9 +2,9 @@
 
 import { useState } from "react"
 // Se han restaurado los imports originales
-import { Bell, User, LogOut } from 'lucide-react'
+import { Bell, User, LogOut, Settings as SettingsIcon } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Dashboard } from "./sections/dashboard"
 import { Transactions } from "./sections/transactions"
@@ -14,6 +14,7 @@ import { Settings } from "./sections/settings"
 import { BottomNavigation } from "./bottom-navigation"
 import { CustomSidebar } from "./custom-sidebar"
 import { useAuth } from "./auth-provider"
+import { Profile } from "./sections/profile" // Añade esta línea con tus otros imports de secciones
 
 export function MainApp() {
   const [activeSection, setActiveSection] = useState("dashboard")
@@ -34,6 +35,8 @@ export function MainApp() {
         return <Investments />
       case "budgets":
         return <Budgets />
+        case "profile":
+      return <Profile /> 
       case "settings":
         return <Settings />
       default:
@@ -74,22 +77,60 @@ export function MainApp() {
                       </svg>
                   </button>
               </div>
-              {/* Texto "Hola!" y nombre de usuario con foto a la derecha */}
-              <div 
-                className="flex items-center space-x-3 cursor-pointer"
-                onClick={() => setActiveSection("settings")}
-              >
-                  <div className="flex flex-col items-end">
-                      <p className="font-normal text-sm text-gray-200">Hola!</p>
-                      <p className="text-lg font-bold text-white">Julio Contreras</p>
-                  </div>
-                  {/* MODIFICACIÓN FINAL: Foto de perfil de GitHub. */}
-                  <img 
-                    src="https://github.com/juliocontreras.png" // URL de la foto de perfil de GitHub
-                    alt="Profile" 
-                    className="h-11 w-11 rounded-full object-cover ring-2 ring-[#29c2a3]"
-                  />
-              </div>
+             {/* Menú desplegable del perfil de usuario */}
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    {/* Este es el elemento que activa el menú (tu nombre y foto) */}
+    <div className="flex items-center space-x-3 cursor-pointer">
+      <div className="flex flex-col items-end">
+        <p className="font-normal text-sm text-gray-200">Hola!</p>
+        <p className="text-lg font-bold text-white">Julio Contreras</p>
+      </div>
+      <img 
+        src="https://github.com/juliocontreras.png"
+        alt="Profile" 
+        className="h-11 w-11 rounded-full object-cover ring-2 ring-[#29c2a3]"
+      />
+    </div>
+  </DropdownMenuTrigger>
+  
+  <DropdownMenuContent className="w-56 bg-[#20333b] border-gray-700 text-white" align="end">
+    {/* INICIO: Sección añadida */}
+    <div className="px-2 py-2">
+      <p className="font-bold text-sm text-white">Julio Contreras</p>
+      <p className="text-xs text-gray-400">julio.contreras@email.com</p>
+    </div>
+    <DropdownMenuSeparator className="bg-gray-700" />
+    {/* FIN: Sección añadida */}
+
+    {/* Opción 1: Perfil */}
+    <DropdownMenuItem 
+      className="cursor-pointer hover:bg-[#29c2a3]/20 focus:bg-[#29c2a3]/30"
+      onClick={() => setActiveSection("profile")}
+    >
+      <User className="mr-2 h-4 w-4" />
+      <span>Perfil</span>
+    </DropdownMenuItem>
+    
+    {/* Opción 2: Configuración */}
+    <DropdownMenuItem 
+      className="cursor-pointer hover:bg-[#29c2a3]/20 focus:bg-[#29c2a3]/30"
+      onClick={() => setActiveSection("settings")}
+    >
+      <SettingsIcon className="mr-2 h-4 w-4" />
+      <span>Configuración</span>
+    </DropdownMenuItem>
+    
+{/* Opción 3: Cerrar Sesión */}
+<DropdownMenuItem 
+  className="cursor-pointer hover:bg-red-500/20 focus:bg-red-500/30"
+  onClick={logout}
+>
+  <LogOut className="mr-2 h-4 w-4" />
+  <span>Cerrar sesión</span>
+</DropdownMenuItem>
+</DropdownMenuContent>
+</DropdownMenu>
           </div>
         </header>
 
